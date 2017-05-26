@@ -62,7 +62,7 @@ func main() {
 	fmt.Printf("\nMessage received")
 	printHex(response, n)
 
-	myXWAY, unite := Decode(response)
+	myXWAY, unite := xway.Decode(response)
 	fmt.Println(myXWAY)
 	printHex(unite, 0)
 }

@@ -1,7 +1,7 @@
 package xway
 
-func Decode(b []byte) (XWAYRequest, []byte) {
-	myXWAY := XWAYRequest{
+func Decode(b []byte) (*XWAYRequest, []byte) {
+	myXWAY := &XWAYRequest{
 		Sender: Address{
 			Station: b[1],
 			Network: b[2] >> 4,

@@ -36,7 +36,7 @@ func (a Address) encode(typeAddr byte) ([]byte, parameters, error) {
 		return nil, nil, ErrWrongStationNumber
 	}
 
-	buffer := []byte{a.Station, 5}
+	buffer := []byte{a.Station, GATE_LEVEL5}
 	params := []parameter{}
 	if a.Network <= 15 {
 		buffer[1] = a.Network << 4
@@ -47,14 +47,15 @@ func (a Address) encode(typeAddr byte) ([]byte, parameters, error) {
 			value: []byte{a.Network},
 		})
 	}
-	if a.Gate <= 15 {
-		buffer[1] += a.Gate
-	} else {
+
+	if a.Network > 15 || a.Gate > 15 {
 		params = append(params, parameter{
 			id:    typeAddr,
 			lg:    1,
 			value: []byte{a.Gate},
 		})
+	} else {
+		buffer[1] += a.Gate
 	}
 	return buffer, params, nil
 }
