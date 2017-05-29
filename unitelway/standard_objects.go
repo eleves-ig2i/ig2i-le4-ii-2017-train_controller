@@ -1,32 +1,27 @@
 package unitelway
 
-import "fmt"
-
+const (
+	// Standard objects
+	// 0xXXYY
+	// XX request code, YY response code
+	READ_INTERNAL_BIT    = 0x0030
+	WRITE_INTERNAL_BIT   = 0x10FE
+	FORCE_INTERNAL_BIT   = 0x1BFE
+	READ_INTERNAL_WORD   = 0x0434
+	WRITE_INTERNAL_WORD  = 0x14FE
+	READ_INTERNAL_DWORD  = 0x4070
+	WRITE_INTERNAL_DWORD = 0x46FE
+	READ_CONSTANT_WORD   = 0x0535
+	READ_CONSTANT_DWORD  = 0x4171
+	READ_SYSTEM_BIT      = 0x0131
+	WRITE_SYSTEM_BIT     = 0x11FE
+	READ_SYSTEM_WORD     = 0x0636
+	WRITE_SYSTEM_WORD    = 0x15FE
+	READ_GRAFCET_BIT     = 0x2A5A
+)
 const (
 	categoryCode = 7
 )
-
-var (
-	ErrIncompatibleType = fmt.Errorf("incompatible type with UNI-TE")
-)
-
-//func WriteObject(segment, address byte, data []interface{}) ([]byte, byte, error) {
-//	var objectType byte
-//	switch data.(type) {
-//	default:
-//		return nil, 0, ErrIncompatibleType
-//	case []bool:
-//	case []int8:
-//	case []byte:
-//	case []uint16:
-//	case []int16:
-//	case []int32:
-//	case []float32:
-//		//math.Float32bits()
-//		//math.Float32frombits()
-//	}
-//	request := []byte{WRITE_OBJECT >> 8, 7, segment}
-//}
 
 // bitNumber is between 0-255
 func ReadBit(bitNumber byte) ([]byte, byte) {
