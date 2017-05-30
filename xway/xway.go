@@ -10,7 +10,7 @@ const (
 	GATE_LEVEL5 = 5
 	GATE_LEVEL6 = 8
 
-	MY_STATION = 0x30
+	MY_STATION = 0x20
 	MY_NETWORK = 0x08
 )
 const (

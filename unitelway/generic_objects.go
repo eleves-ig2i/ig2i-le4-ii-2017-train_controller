@@ -37,7 +37,7 @@ var (
 
 func WriteObject(objectType, address uint16, v interface{}) ([]byte, byte, error) {
 	request := []byte{
-		WRITE_OBJECT >> 8, 7,
+		WRITE_OBJECT >> 8, categoryCode,
 		byte(objectType >> 8), byte(objectType % 256),
 		byte(address % 256), byte(address >> 8),
 	}
@@ -69,7 +69,7 @@ func WriteObject(objectType, address uint16, v interface{}) ([]byte, byte, error
 			return nil, 0, ErrWrongObjectType
 		}
 		request = append(request, byte(len(v)%256), byte(len(v)>>8))
-		for elt := range v {
+		for _, elt := range v {
 			request = append(request, byte(elt%256), byte(elt>>8))
 		}
 		return request, expected, nil

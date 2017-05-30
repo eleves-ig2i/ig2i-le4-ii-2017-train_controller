@@ -9,15 +9,15 @@ func Decode(b []byte) (*XWAYRequest, []byte) {
 		},
 		Receiver: Address{
 			Station: b[3],
-			Network: b[3] >> 4,
-			Gate:    b[3] % 16,
+			Network: b[4] >> 4,
+			Gate:    b[4] % 16,
 		},
 	}
 	if b[0]&0x02 > 0 {
 		myXWAY.Refused = true
 	}
 
-	i := 4
+	i := 5
 	if b[0]%2 > 0 {
 		for {
 
