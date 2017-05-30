@@ -31,8 +31,8 @@ type uniteConn struct {
 }
 
 func transmit(reqUnite transmitter) error {
-	fmt.Printf("\nDialing machine on port %s", automaton2)
-	conn, err := net.Dial("tcp", automaton2)
+	fmt.Printf("\nDialing machine on port %s", selectedAutomaton)
+	conn, err := net.Dial("tcp", selectedAutomaton)
 	if err != nil {
 		return err
 	}
@@ -52,6 +52,7 @@ func transmit(reqUnite transmitter) error {
 			message := <-req.sender
 			if message.x != nil {
 				u.x = *message.x
+				u.x.Encode()
 			}
 			_, err := u.write(message.b)
 			if err != nil {
@@ -73,11 +74,19 @@ func transmit(reqUnite transmitter) error {
 			response := <-req.sender
 			if response.x != nil {
 				u.x = *response.x
+				u.x.Encode()
 			}
 			_, err = u.write(response.b)
 			if err != nil {
 				return err
 			}
+		}
+
+		// temp fix for keeping connexion
+		u.c.Close()
+		u.c, err = net.Dial("tcp", selectedAutomaton)
+		if err != nil {
+			return err
 		}
 	}
 	conn.Close()
@@ -110,7 +119,7 @@ func (u uniteConn) write(message []byte) (int, error) {
 	}
 
 	fmt.Printf("\nMessage sent")
-	util.PrintHex(request[0:6], u.x.Header, message)
+	util.PrintHex(request[0:7], u.x.Header, message)
 	// send request
 	return u.c.Write(request)
 }
