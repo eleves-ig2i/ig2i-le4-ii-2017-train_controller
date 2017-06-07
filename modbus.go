@@ -10,6 +10,10 @@ func encodeMODBUS(request []byte) ([]byte, error) {
 	if len(request) > 65535 {
 		return nil, fmt.Errorf("too much data sent in the MODBUS request")
 	}
-	request = append([]byte{byte(len(request) % 256), byte(len(request) / 256)}, request...)
+	lg := len(request) + 1
+	//if request[0] == 0xf1 {
+	//	lg++
+	//}
+	request = append([]byte{byte(lg % 256), byte(lg / 256)}, request...)
 	return append(secretSequence, request...), nil
 }

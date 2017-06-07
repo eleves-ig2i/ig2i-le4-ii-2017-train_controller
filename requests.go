@@ -10,14 +10,13 @@ func (t transmitter) writeVar(objectType, address uint16, v interface{}) (*xway.
 	if err != nil {
 		return nil, nil, err
 	}
-	request := transmitterChannels{
-		sender:   make(chan frame),
-		receiver: make(chan frame),
-		mode:     SEND,
+	t.requests <- SEND
+	tmp := xway.NewXWAYRequest(automatonStation, automatonNetwork, automatonGate)
+	t.message <- frame{
+		x: &tmp,
+		b: message,
 	}
-	t <- request
-	request.sender <- frame{b:message}
-	response := <-request.receiver
+	response := <-t.message
 
 	return response.x, response.b, nil
 }

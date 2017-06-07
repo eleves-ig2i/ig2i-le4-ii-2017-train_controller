@@ -13,11 +13,9 @@ const (
 	RECEIVE = true
 )
 
-type transmitter chan transmitterChannels
-
-type transmitterChannels struct {
-	sender, receiver chan frame
-	mode             bool
+type transmitter struct {
+	message  chan frame
+	requests chan bool
 }
 
 type frame struct {
@@ -25,14 +23,21 @@ type frame struct {
 	x *xway.XWAYRequest
 }
 
+func newTransmitter() transmitter {
+	return transmitter{
+		message:  make(chan frame),
+		requests: make(chan bool),
+	}
+}
+
 type uniteConn struct {
 	x xway.XWAYRequest
 	c net.Conn
 }
 
-func transmit(reqUnite transmitter) error {
+func (t transmitter) transmit() error {
 	fmt.Printf("\nDialing machine on port %s", selectedAutomaton)
-	conn, err := net.Dial("tcp", selectedAutomaton)
+	conn, err := net.Dial("tcp4", selectedAutomaton)
 	if err != nil {
 		return err
 	}
@@ -47,9 +52,9 @@ func transmit(reqUnite transmitter) error {
 		return err
 	}
 
-	for req := range reqUnite {
-		if req.mode == SEND {
-			message := <-req.sender
+	for req := range t.requests {
+		if req == SEND {
+			message := <-t.message
 			if message.x != nil {
 				u.x = *message.x
 				u.x.Encode()
@@ -63,15 +68,15 @@ func transmit(reqUnite transmitter) error {
 			if err != nil {
 				return err
 			}
-			req.receiver <- frame{b, x}
+			t.message <- frame{b, x}
 
 		} else {
 			x, b, err := u.read()
 			if err != nil {
 				return err
 			}
-			req.receiver <- frame{b, x}
-			response := <-req.sender
+			t.message <- frame{b, x}
+			response := <-t.message
 			if response.x != nil {
 				u.x = *response.x
 				u.x.Encode()
@@ -83,11 +88,11 @@ func transmit(reqUnite transmitter) error {
 		}
 
 		// temp fix for keeping connexion
-		u.c.Close()
-		u.c, err = net.Dial("tcp", selectedAutomaton)
-		if err != nil {
-			return err
-		}
+		//u.c.Close()
+		//u.c, err = net.Dial("tcp", selectedAutomaton)
+		//if err != nil {
+		//	return err
+		//}
 	}
 	conn.Close()
 	return nil
@@ -100,7 +105,7 @@ func (u uniteConn) read() (*xway.XWAYRequest, []byte, error) {
 	if err != nil || n != 7 {
 		return nil, nil, err
 	}
-	lg := int(buffer[6])*256 + int(buffer[5])
+	lg := int(buffer[6])*256 + int(buffer[5]) - 1
 	response := make([]byte, lg)
 	_, err = u.c.Read(response)
 	if err != nil {
