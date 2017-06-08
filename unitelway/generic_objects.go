@@ -51,6 +51,19 @@ func WriteObject(objectType, address uint16, v interface{}) ([]byte, byte, error
 		default:
 			return nil, 0, ErrWrongObjectType
 		}
+		request = append(request, byte(len(v)%256), byte(len(v)>>8))
+		var b, byteSize byte
+		for i, elt := range v {
+			if elt == true {
+				b += 1 << byteSize
+			}
+			byteSize++
+			if byteSize == 8 || i == len(v)-1 {
+				request = append(request, b)
+				byteSize = 0
+				b = 0
+			}
+		}
 	case []byte:
 		switch objectType {
 		case SystemByte:
@@ -77,6 +90,8 @@ func WriteObject(objectType, address uint16, v interface{}) ([]byte, byte, error
 	return nil, 0, ErrIncompatibleType
 }
 
+// Unimplemented types
+//
 //case []int16:
 //case []int32:
 //case []uint32:

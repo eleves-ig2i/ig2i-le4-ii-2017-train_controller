@@ -1,26 +1,45 @@
 package main
 
 import (
+	"fmt"
+
 	u "github.com/kindermoumoute/schneider/unitelway"
 	"github.com/kindermoumoute/schneider/xway"
 )
 
-func (t transmitter) writeVar(objectType, address uint16, v interface{}) (*xway.XWAYRequest, []byte, error) {
+var (
+	secretSequence = []byte{0x00, 0x00, 0x00, 0x01, 0x00}
+
+	ErrRequestFailed = fmt.Errorf("report says request failed")
+)
+
+func (t transmitter) writeVar(objectType, address uint16, v interface{}, mode bool) error {
 	message, _, err := u.WriteObject(objectType, address, v)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
-	t.requests <- SEND
-	tmp := xway.NewXWAYRequest(automatonStation, automatonNetwork, automatonGate)
+	t.requests <- mode
 	t.message <- frame{
-		x: &tmp,
 		b: message,
 	}
-	response := <-t.message
 
-	return response.x, response.b, nil
+	response := <-t.message
+	if len(response.b) != 1 || response.b[0] != u.WRITE_OBJECT%256 {
+		return ErrRequestFailed
+	}
+
+	return nil
 }
 
-//func (t transmitter) readVar(objectType, address uint16)  {
-//
-//}
+func encodeMODBUS(request []byte) ([]byte, error) {
+	if len(request) > 65535 {
+		return nil, fmt.Errorf("too much data sent in the MODBUS request")
+	}
+	lg := len(request) + 1
+	request = append([]byte{byte(lg % 256), byte(lg / 256)}, request...)
+	return append(secretSequence, request...), nil
+}
+
+func newXWAY(station, network, gate byte) xway.XWAYRequest {
+	return xway.NewXWAYRequest(station, network, gate, MY_STATION, MY_NETWORK, MY_GATE)
+}

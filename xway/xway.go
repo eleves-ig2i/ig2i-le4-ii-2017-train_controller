@@ -7,11 +7,9 @@ const (
 	GATE_TERMINAL1
 	GATE_TERMINAL2
 	GATE_TERMINAL3
+
 	GATE_LEVEL5 = 5
 	GATE_LEVEL6 = 8
-
-	MY_STATION = 0x20
-	MY_NETWORK = 0x08
 )
 const (
 	sender   = 0
@@ -42,12 +40,12 @@ type Address struct {
 	Station, Network, Gate byte
 }
 
-func NewXWAYRequest(station, network, gate byte) XWAYRequest {
+func NewXWAYRequest(station, network, gate, myStation, myNetwork, myGate byte) XWAYRequest {
 	myXWAY := XWAYRequest{
 		Sender: Address{
-			MY_STATION,
-			MY_NETWORK,
-			GATE_SYSTEM,
+			myStation,
+			myNetwork,
+			myGate,
 		},
 		Receiver: Address{
 			station,

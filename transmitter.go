@@ -9,9 +9,28 @@ import (
 )
 
 const (
-	SEND    = false
-	RECEIVE = true
+	SEND             = false
+	SEND_AND_RECEIVE = true
 )
+
+var (
+	ErrBytesNotSent = fmt.Errorf("failed to write/read all bytes in the request")
+)
+
+func initCommunication() transmitter {
+	t := newTransmitter()
+	go func() {
+		err := t.transmit()
+		if err != nil {
+			panic(err)
+		}
+	}()
+	err := t.setXWAYAddress()
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
 
 type transmitter struct {
 	message  chan frame
@@ -30,101 +49,118 @@ func newTransmitter() transmitter {
 	}
 }
 
-type uniteConn struct {
-	x xway.XWAYRequest
-	c net.Conn
-}
-
 func (t transmitter) transmit() error {
-	fmt.Printf("\nDialing machine on port %s", selectedAutomaton)
-	conn, err := net.Dial("tcp4", selectedAutomaton)
-	if err != nil {
-		return err
-	}
-
-	u := uniteConn{
-		xway.NewXWAYRequest(automatonStation, automatonNetwork, automatonGate),
-		conn,
-	}
-	// write XWAY header
-	err = u.x.Encode()
+	u, err := NewUniteConn()
 	if err != nil {
 		return err
 	}
 
 	for req := range t.requests {
-		if req == SEND {
-			message := <-t.message
-			if message.x != nil {
-				u.x = *message.x
-				u.x.Encode()
-			}
-			_, err := u.write(message.b)
-			if err != nil {
-				return err
-			}
+		err := u.write(<-t.message)
+		if err != nil {
+			return err
+		}
 
-			x, b, err := u.read()
-			if err != nil {
-				return err
-			}
-			t.message <- frame{b, x}
+		f, err := u.read()
+		if err != nil {
+			return err
+		}
+		t.message <- f
 
-		} else {
-			x, b, err := u.read()
+		if req == SEND_AND_RECEIVE {
+			f, err = u.read()
 			if err != nil {
 				return err
 			}
-			t.message <- frame{b, x}
-			response := <-t.message
-			if response.x != nil {
-				u.x = *response.x
-				u.x.Encode()
-			}
-			_, err = u.write(response.b)
+			t.message <- f
+			err = u.write(<-t.message)
 			if err != nil {
 				return err
 			}
 		}
-
-		// temp fix for keeping connexion
-		//u.c.Close()
-		//u.c, err = net.Dial("tcp", selectedAutomaton)
-		//if err != nil {
-		//	return err
-		//}
 	}
-	conn.Close()
+	u.c.Close()
 	return nil
 }
 
-func (u uniteConn) read() (*xway.XWAYRequest, []byte, error) {
-	fmt.Printf("\nMessage received")
+type uniteConn struct {
+	x xway.XWAYRequest
+	c net.Conn
+}
+
+func NewUniteConn() (uniteConn, error) {
+	// connect to the automaton
+	fmt.Printf("\nDialing machine %s", selectedAutomaton)
+	conn, err := net.Dial("tcp", selectedAutomaton)
+	if err != nil {
+		return uniteConn{}, err
+	}
+
+	// write uniteConn object
+	u := uniteConn{
+		newXWAY(automatonStation, automatonNetwork, automatonGate),
+		conn,
+	}
+	err = u.x.Encode()
+
+	return u, err
+}
+
+func (u uniteConn) read() (frame, error) {
+	// read MODBUS frame
 	buffer := make([]byte, 7)
 	n, err := u.c.Read(buffer)
 	if err != nil || n != 7 {
-		return nil, nil, err
-	}
-	lg := int(buffer[6])*256 + int(buffer[5]) - 1
-	response := make([]byte, lg)
-	_, err = u.c.Read(response)
-	if err != nil {
-		return nil, nil, err
-	}
-	x, b := xway.Decode(response)
-	util.PrintHex(buffer, response[0:len(response)-len(b)], b)
-	return x, b, nil
-}
-func (u uniteConn) write(message []byte) (int, error) {
-	// encapsulate into XWAY and MODBUS
-	request := append(u.x.Header, message...)
-	request, err := encodeMODBUS(request)
-	if err != nil {
-		return 0, err
+		return frame{}, err
 	}
 
-	fmt.Printf("\nMessage sent")
-	util.PrintHex(request[0:7], u.x.Header, message)
+	// read XWAY and UNITE frame
+	lg := int(buffer[6])*256 + int(buffer[5]) - 1
+	response := make([]byte, lg)
+	n, err = u.c.Read(response)
+	if err != nil {
+		return frame{}, err
+	}
+	if n != lg {
+		return frame{}, ErrBytesNotSent
+	}
+	x, b := xway.Decode(response)
+
+	// printf message
+	fmt.Printf("\nMessage received")
+	util.PrintHex(buffer, response[0:len(response)-len(b)], b)
+
+	return frame{b, x}, nil
+}
+
+func (u uniteConn) write(f frame) error {
+	var request []byte
+
+	// encapsulate into XWAY and MODBUS
+	if f.x != nil {
+		f.x.Encode()
+		request = append(f.x.Header, f.b...)
+
+	} else {
+		request = append(u.x.Header, f.b...)
+	}
+	request, err := encodeMODBUS(request)
+	if err != nil {
+		return err
+	}
+
 	// send request
-	return u.c.Write(request)
+	n, err := u.c.Write(request)
+	if err != nil {
+		return err
+	}
+	if n != len(request) {
+		return ErrBytesNotSent
+	}
+
+	// printf message
+	fmt.Printf("\nMessage sent")
+	util.PrintHex(request[0:7], u.x.Header, f.b)
+
+	return nil
 }

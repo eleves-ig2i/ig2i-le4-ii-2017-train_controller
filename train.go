@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	u "github.com/kindermoumoute/schneider/unitelway"
-	"github.com/kindermoumoute/schneider/xway"
 )
 
 const (
@@ -75,18 +74,23 @@ const (
 )
 
 func (t transmitter) activate(section uint16) error {
-	fmt.Println("Section demandée ", section)
-	_, _, err := t.writeVar(u.InternalWord, 10, []uint16{T8})
+	fmt.Println("Section ", section)
+	err := t.writeVar(u.InternalWord, 10, []uint16{section}, SEND_AND_RECEIVE)
 	if err != nil {
 		return err
 	}
-	t.requests <- RECEIVE
 	r := <-t.message
-	newXWAY := xway.NewXWAYRequest(r.x.Sender.Station, r.x.Sender.Network, r.x.Sender.Gate)
+	newXWAY := newXWAY(r.x.Sender.Station, r.x.Sender.Network, r.x.Sender.Gate)
 	t.message <- frame{
 		b: []byte{0xfe},
 		x: &newXWAY,
 	}
 
 	return nil
+}
+
+func (t transmitter) setXWAYAddress() error {
+	var xwayAddress uint16 = MY_STATION<<8 + MY_NETWORK
+	return t.writeVar(u.InternalWord, 300, []uint16{0x0401, xwayAddress, 0xFE00}, SEND)
+
 }

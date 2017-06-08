@@ -1,6 +1,6 @@
 package main
 
-import u "github.com/kindermoumoute/schneider/unitelway"
+import "github.com/kindermoumoute/schneider/xway"
 
 const (
 	automaton2    = "192.168.209.252:502"
@@ -16,26 +16,20 @@ const (
 	automatonStation = 3
 	automatonNetwork = 8
 	automatonGate    = 0
+
+	MY_STATION = 0x20
+	MY_NETWORK = 0x08
+	MY_GATE    = xway.GATE_SYSTEM
 )
 
 func main() {
-	t := newTransmitter()
-	go func() {
-		err := t.transmit()
-		if err != nil {
-			panic(err)
-		}
-	}()
-	_, _, err := t.writeVar(u.InternalWord, 300, []uint16{0x0401, 0x2008, 0xFE00})
-	if err != nil {
-		panic(err)
-	}
+	t := initCommunication()
+
 	for {
 		t.activate(TJ0d)
 		t.activate(A0d)
 		t.activate(T8)
 		t.activate(T12)
-		
 		t.activate(TJ1b)
 		t.activate(A5b)
 		t.activate(T17)

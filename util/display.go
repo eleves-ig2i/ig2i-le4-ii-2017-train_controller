@@ -2,6 +2,9 @@ package util
 
 import "fmt"
 
+// u: MODBUS frame
+// x: XWAY frame
+// b: UNI-TE frame
 func PrintHex(u, x, b []byte) {
 	fmt.Printf("\n")
 	for _, elt := range u {
