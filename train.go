@@ -74,7 +74,7 @@ const (
 )
 
 func (t transmitter) activate(section uint16) error {
-	fmt.Println("Section ", section)
+	fmt.Printf("\n\nSection %d", section)
 	err := t.writeVar(u.InternalWord, 10, []uint16{section}, SEND_AND_RECEIVE)
 	if err != nil {
 		return err
@@ -85,7 +85,6 @@ func (t transmitter) activate(section uint16) error {
 		b: []byte{0xfe},
 		x: &newXWAY,
 	}
-
 	return nil
 }
 

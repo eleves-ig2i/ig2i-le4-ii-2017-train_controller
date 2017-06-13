@@ -137,13 +137,13 @@ func (u uniteConn) write(f frame) error {
 	var request []byte
 
 	// encapsulate into XWAY and MODBUS
+	x := u.x.Header
 	if f.x != nil {
 		f.x.Encode()
-		request = append(f.x.Header, f.b...)
+		x = f.x.Header
 
-	} else {
-		request = append(u.x.Header, f.b...)
 	}
+	request = append(x, f.b...)
 	request, err := encodeMODBUS(request)
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (u uniteConn) write(f frame) error {
 
 	// printf message
 	fmt.Printf("\nMessage sent")
-	util.PrintHex(request[0:7], u.x.Header, f.b)
+	util.PrintHex(request[0:7], x, f.b)
 
 	return nil
 }

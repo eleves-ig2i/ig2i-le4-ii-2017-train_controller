@@ -21,9 +21,6 @@ package unitelway
 //	WRITE_SYSTEM_WORD    = 0x15FE
 //	READ_GRAFCET_BIT     = 0x2A5A
 //)
-//const (
-//	categoryCode = 7
-//)
 //
 //// bitNumber is between 0-255
 //func ReadBit(bitNumber byte) ([]byte, byte) {

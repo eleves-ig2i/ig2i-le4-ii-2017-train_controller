@@ -30,6 +30,10 @@ const (
 	SystemDoubleWord   = 0x6A08
 )
 
+const (
+	categoryCode = 7
+)
+
 var (
 	ErrWrongObjectType  = fmt.Errorf("given object type doesn't exist")
 	ErrIncompatibleType = fmt.Errorf("incompatible type with UNI-TE")
