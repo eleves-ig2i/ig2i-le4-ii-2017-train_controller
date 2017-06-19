@@ -68,6 +68,7 @@ func WriteObject(objectType, address uint16, v interface{}) ([]byte, byte, error
 				b = 0
 			}
 		}
+		return request, expected, nil
 	case []byte:
 		switch objectType {
 		case SystemByte:

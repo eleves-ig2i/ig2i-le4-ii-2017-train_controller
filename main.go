@@ -1,10 +1,6 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/kindermoumoute/schneider/xway"
-)
+import "github.com/kindermoumoute/schneider/xway"
 
 const (
 	automaton2    = "192.168.209.252:502"
@@ -27,15 +23,11 @@ const (
 )
 
 func main() {
-	t := initCommunication()
+	train1, train2 := tracks()
 
-	track := []uint16{TJ0d, A0d, T8, T12, TJ1b, A5b, T17, A6b, TJ2b, TI5, PA1d, T19, PA0d, T15, A2d, T9}
-	for {
-		for _, section := range track {
-			err := t.activate(section)
-			if err != nil {
-				fmt.Printf("=== ERROR === %v", err)
-			}
-		}
-	}
+	t := initCommunication()
+	t.run(train1)
+	t.run(train2)
+
+	select {}
 }
