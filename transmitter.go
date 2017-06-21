@@ -8,15 +8,15 @@ import (
 )
 
 const (
-	SEND             = false
-	SEND_AND_RECEIVE = true
+	WRITE          = false
+	READ_AND_WRITE = true
 )
 
 var (
 	ErrBytesNotSent = fmt.Errorf("failed to write/read all bytes in the request")
 )
 
-func initCommunication() transmitter {
+func initCommunication() signaller {
 	t := newTransmitter()
 	go func() {
 		err := t.transmit()
@@ -28,7 +28,7 @@ func initCommunication() transmitter {
 	if err != nil {
 		panic(err)
 	}
-	return t
+	return startSignaller(t)
 }
 
 type transmitter struct {
@@ -55,6 +55,18 @@ func (t transmitter) transmit() error {
 	}
 
 	for req := range t.requests {
+		if req == READ_AND_WRITE {
+			f, err := u.read()
+			if err != nil {
+				return err
+			}
+			t.message <- f
+			err = u.write(<-t.message)
+			if err != nil {
+				return err
+			}
+		}
+
 		err := u.write(<-t.message)
 		if err != nil {
 			return err
@@ -65,18 +77,6 @@ func (t transmitter) transmit() error {
 			return err
 		}
 		t.message <- f
-
-		if req == SEND_AND_RECEIVE {
-			f, err = u.read()
-			if err != nil {
-				return err
-			}
-			t.message <- f
-			err = u.write(<-t.message)
-			if err != nil {
-				return err
-			}
-		}
 	}
 	u.c.Close()
 	return nil
