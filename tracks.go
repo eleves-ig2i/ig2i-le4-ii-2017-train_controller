@@ -78,7 +78,7 @@ func tracks() (train, train) {
 	var ressource1 = &sync.Mutex{}
 	return train{track: []ressource{
 			ressource{
-				sections: []uint16{TJ0d, A0d, T8},
+				sections: []uint16{TJ0b, A0d, T8},
 				m:        ressource1,
 			},
 			ressource{
@@ -88,11 +88,11 @@ func tracks() (train, train) {
 		}},
 		train{track: []ressource{
 			ressource{
-				sections: []uint16{TJ0b, A0b, TI1},
+				sections: []uint16{TJ0d, A0b, TI1},
 				m:        ressource1,
 			},
 			ressource{
-				sections: []uint16{T11, A7d, T16, A8d, TI7, T14, A1d, TI2, I1, A1b, TI1, I0, A1b, TI0},
+				sections: []uint16{T11, A7d, T16, A8d, TI7, T14, A1d, TI2, I1, A1b, 101, I0, A1b, TI0},
 				m:        &sync.Mutex{},
 			},
 		}}

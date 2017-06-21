@@ -23,6 +23,7 @@ func (t transmitter) run(train train) {
 			}
 			for _, ressource := range train.track {
 				ressource.m.Lock()
+				fmt.Printf("\nRessource prise")
 				for _, section := range ressource.sections {
 					err := t.activate(section)
 					if err != nil {
@@ -30,7 +31,8 @@ func (t transmitter) run(train train) {
 					}
 				}
 
-				ressource.m.Lock()
+				ressource.m.Unlock()
+				fmt.Printf("\nRessource rendue")
 			}
 		}
 	}()
@@ -43,6 +45,12 @@ func (t transmitter) activate(section uint16) error {
 		return err
 	}
 	r := <-t.message
+	cr := r.b[len(r.b)-1]
+	if cr&1 > 0 {
+		fmt.Printf("=== WARNING === Train trop rapide")
+	} else if cr&2 > 0 {
+		fmt.Printf("=== WARNING === Train trop lent")
+	}
 	newXWAY := newXWAY(r.x.Sender.Station, r.x.Sender.Network, r.x.Sender.Gate)
 	t.message <- frame{
 		b: []byte{0xfe},

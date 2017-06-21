@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/kindermoumoute/schneider/util"
 	"github.com/kindermoumoute/schneider/xway"
 )
 
@@ -127,8 +126,8 @@ func (u uniteConn) read() (frame, error) {
 	x, b := xway.Decode(response)
 
 	// printf message
-	fmt.Printf("\nMessage received")
-	util.PrintHex(buffer, response[0:len(response)-len(b)], b)
+	//fmt.Printf("\nMessage received")
+	//util.PrintHex(buffer, response[0:len(response)-len(b)], b)
 
 	return frame{b, x}, nil
 }
@@ -159,8 +158,8 @@ func (u uniteConn) write(f frame) error {
 	}
 
 	// printf message
-	fmt.Printf("\nMessage sent")
-	util.PrintHex(request[0:7], x, f.b)
+	//fmt.Printf("\nMessage sent")
+	//util.PrintHex(request[0:7], x, f.b)
 
 	return nil
 }
