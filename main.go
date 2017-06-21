@@ -24,8 +24,8 @@ const (
 
 func main() {
 	train1, train2 := tracks()
-
 	t := initCommunication()
+
 	t.run(train1)
 	t.run(train2)
 
