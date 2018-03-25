@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/kindermoumoute/schneider/xway"
+	"github.com/eleves-ig2i/ig2i-le4-ii-2017-train_controller/xway"
 )
 
 const (

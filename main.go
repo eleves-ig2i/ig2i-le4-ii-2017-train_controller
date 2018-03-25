@@ -1,6 +1,6 @@
 package main
 
-import "github.com/kindermoumoute/schneider/xway"
+import "github.com/eleves-ig2i/ig2i-le4-ii-2017-train_controller/xway"
 
 const (
 	automaton2    = "192.168.209.252:502"

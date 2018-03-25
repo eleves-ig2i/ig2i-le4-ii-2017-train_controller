@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	u "github.com/kindermoumoute/schneider/unitelway"
-	"github.com/kindermoumoute/schneider/xway"
+	u "github.com/eleves-ig2i/ig2i-le4-ii-2017-train_controller/unitelway"
+	"github.com/eleves-ig2i/ig2i-le4-ii-2017-train_controller/xway"
 )
 
 var (

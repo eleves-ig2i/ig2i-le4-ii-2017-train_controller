@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	u "github.com/kindermoumoute/schneider/unitelway"
+	u "github.com/eleves-ig2i/ig2i-le4-ii-2017-train_controller/unitelway"
 )
 
 type train struct {
