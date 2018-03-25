@@ -1,4 +1,5 @@
-`master` works with 2 trains running concurrently. 
+`master` works with 2 trains running concurrently.
+
 `read_and_write` is an unfinished try to run it in parallel.
 
 #### usage
